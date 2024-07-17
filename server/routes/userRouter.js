@@ -1,12 +1,11 @@
-const Router = require("express");
-const router = new Router();
-const UserController = require("../controllers/userController");
-const userController = require("../controllers/userController");
+const Router = require('express')
+const router = new Router()
+const userController = require('../controllers/userController')
+const authMiddleware = require('../middleware/authMiddleware')
 
-router.post("/registration", userController.registration);
-router.post("/login", userController.login);
-router.get("/auth", userController.checkUser, (req, res) => {
-  res.json({ message: "User is already logged" });
-});
+router.post('/registration', userController.registration)
+router.post('/login', userController.login)
+router.get('/auth', authMiddleware, userController.checkUser)
+router.put("/update", authMiddleware, userController.updateUser);
 
-module.exports = router;
+module.exports = router

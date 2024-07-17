@@ -1,17 +1,78 @@
 const ApiError = require("../errors/apiError");
+const bcrypt = require("bcrypt")
+const jwt = require('jsonwebtoken')
+const { User, Basket } = require("../models/models")
+const authMiddleware = require("../middleware/authMiddleware")
 
-class UserController {
-  async registration(req, res) {}
-
-  async login(req, res) {}
-
-  async checkUser(req, res, next) {
-    const { id } = req.query;
-    if (!id) {
-      return next(ApiError.badRequest("ID not specified"));
-    }
-    res.json(id);
-  }
+const generateJwt = (id, email, role) => {
+    return jwt.sign(
+        { id, email, role },
+        process.env.SECRET_KEY,
+        { expiresIn: '24h' }
+    )
 }
 
-module.exports = new UserController();
+class UserController {
+    async registration(req, res, next) {
+        const { email, password, role } = req.body
+        if (!email || !password) {
+            return next(ApiError.badRequest('Некорректный email или password'))
+        }
+        const candidate = await User.findOne({ where: { email } })
+        if (candidate) {
+            return next(ApiError.badRequest('Пользователь с таким email уже существует'))
+        }
+        const hashPassword = await bcrypt.hash(password, 5)
+        const user = await User.create({ email, role, password: hashPassword })
+        const basket = await Basket.create({ userId: user.id })
+        const token = generateJwt(user.id, user.email, user.role)
+        return res.json({ token })
+    }
+
+    async login(req, res, next) {
+        const { email, password } = req.body
+        const user = await User.findOne({ where: { email } })
+        if (!user) {
+            return next(ApiError.internal('Пользователь не найден'))
+        }
+        let comparePassword = bcrypt.compareSync(password, user.password)
+        if (!comparePassword) {
+            return next(ApiError.internal('Указан неверный пароль'))
+        }
+        const token = generateJwt(user.id, user.email, user.role)
+        return res.json({ token })
+    }
+    async checkUser(req, res, next) {
+        const token = generateJwt(req.user.id, req.user.email, req.user.role)
+        return res.json({ token })
+    }
+
+    async updateUser(req, res, next) {
+        try {
+          const { email, password, role } = req.body;
+          const userId = req.user.id;
+    
+          const updates = {};
+          if (email) updates.email = email;
+          if (password) updates.password = await bcrypt.hash(password, 5);
+          if (role) updates.role = role;
+    
+          const [affectedRows] = await User.update(updates, {
+            where: { id: userId },
+            returning: true,
+          });
+    
+          if (affectedRows === 0) {
+            return next(ApiError.notFound("Пользователь не найден"));
+          }
+    
+          const updatedUser = await User.findOne({ where: { id: userId } });
+          return res.json(updatedUser);
+        } catch (error) {
+          return next(ApiError.internal("Произошла ошибка при обновлении данных пользователя"));
+        }
+      }
+    }
+    
+
+        module.exports = new UserController();

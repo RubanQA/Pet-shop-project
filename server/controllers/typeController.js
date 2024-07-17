@@ -14,6 +14,21 @@ class TypeController {
     }
   }
 
+//   async create(req, res, next) {
+//     try {
+//         const { name } = req.body;
+//         const existingType = await Type.findOne({ where: { name } });
+//         if (existingType) {
+//             return next(ApiError.badRequest(`Type with name "${name}" already exists`));
+//         }
+//         const type = await Type.create({ name });
+//         return res.json(type);
+//     } catch (error) {
+//         return next(ApiError.internal("An error occurred while creating the type"));
+//     }
+// }
+
+
   async getAll(req, res, next) {
     try {
       const types = await Type.findAll();
