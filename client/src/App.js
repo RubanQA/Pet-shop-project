@@ -1,10 +1,12 @@
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
-import AppRouter from "./components/appRouter"; // Adjust the path if necessary
+import AppRouter from "./components/appRouter";
+import NavBar from "./components/navBar"
 
 function App() {
   return (
     <BrowserRouter>
+        <NavBar />
       <AppRouter />
     </BrowserRouter>
   );

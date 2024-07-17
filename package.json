@@ -1,0 +1,10 @@
+{
+  "name": "pet-shop-project",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm start --prefix client\""
+  },
+  "devDependencies": {
+    "concurrently": "^7.0.0"
+  }
+}
