@@ -1,8 +1,8 @@
 import React, {createContext} from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
-import UserStore from "./store/userStore";
-import DeviceStore from "./store/deviceStore";
+import UserStore from "./store/UserStore";
+import DeviceStore from "./store/DeviceStore";
 
 export const Context = createContext(null)
 
@@ -15,3 +15,4 @@ ReactDOM.render(
     </Context.Provider>,
   document.getElementById('root')
 );
+
